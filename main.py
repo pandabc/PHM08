@@ -1,35 +1,37 @@
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 import matplotlib.pyplot as plt
+import PHM08
 
 
 filename = './data/train_FD002.txt'
 
-unit = []
-x = []
-y = []
-z = []
+PHMs = []
+units = set()
 
 with open(filename, 'r') as f:
+    temp = PHM08.PHM08()
+    temp.unit = 1
+    units.add(temp.unit)
     for line in f:
         cols = line.strip().split()
-        unit.append(int(cols[0]))
-        x.append(float(cols[2]))
-        y.append(float(cols[3]))
-        z.append(float(cols[4]))
+        unit = int(cols[0])
+        if unit not in units:
+            PHMs.append(temp)
+            temp = PHM08.PHM08()
+            temp.unit = unit
+            units.add(temp.unit)
+        temp.time.append(int(cols[1]))
+        for i in range(3):
+            temp.settings[i].append(float(cols[i+2]))
+        for i in range(21):
+            temp.sensors[i].append(float(cols[i+5]))
+    PHMs.append(temp)
 
-unit = np.array(unit)
-x = np.array(x)
-y = np.array(y)
-z = np.array(z)
-
-idx = np.where(unit > 0)
-
-x = x[idx]
-y = y[idx]
-z = z[idx]
-
-print len(z)
+phm = PHMs[14]
+x = np.array(phm.settings[0])
+y = np.array(phm.settings[1])
+z = np.array(phm.settings[2])
 
 fig = plt.figure()
 ax = fig.gca(projection='3d')
