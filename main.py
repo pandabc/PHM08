@@ -1,10 +1,10 @@
-from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
-import matplotlib.pyplot as plt
 import PHM08
+from sklearn.cross_validation import train_test_split
+import tensorflow as tf
+from sklearn.preprocessing import scale
 
-
-filename = './data/train_FD002.txt'
+filename = './data/train.txt'
 
 PHMs = []
 units = set()
@@ -28,19 +28,68 @@ with open(filename, 'r') as f:
             temp.sensors[i].append(float(cols[i+5]))
     PHMs.append(temp)
 
-phm = PHMs[14]
-x = np.array(phm.settings[0])
-y = np.array(phm.settings[1])
-z = np.array(phm.settings[2])
+n_units = len(units)
+n_samples = n_units*60
+X_raw = np.empty((n_samples, 24))
+Y_raw = np.empty((n_samples, 1))
 
-fig = plt.figure()
-ax = fig.gca(projection='3d')
+for i in range(n_units):
+    phm = PHMs[i]
+    x, y = phm.generate_data()
+    left = i*60
+    right = i*60 + 60
+    X_raw[left:right, :] = x
+    Y_raw[left:right, :] = y
 
-ax.scatter(x, y, z)
+'''
+for i in range(X_raw.shape[0]):
+    for j in range(24):
+        print X_raw[i, j],
+    print ''
 
-ax.set_xlabel('X')
-ax.set_ylabel('Y')
-ax.set_zlabel('Z')
+'''
+X_raw = scale(X_raw)
 
-plt.show()
+X_train, X_test, y_train, y_test = train_test_split(X_raw, Y_raw, test_size=0.3, random_state=0)
 
+X_train = np.array(X_train)
+X_test = np.array(X_test)
+y_train = np.array(y_train)
+y_test = np.array(y_test)
+
+X_train = scale(X_train)
+
+'''
+for i in range(100):
+    for j in range(24):
+        print X_train[i, j],
+    print ''
+
+'''
+n_samples = X_train.shape[0]
+n_input = 24
+
+x = tf.placeholder('float', [None, n_input])
+y = tf.placeholder('float', [None, 1])
+
+weights = tf.Variable(tf.random_normal([n_input, 1]))
+bias = tf.Variable(tf.random_normal([1]))
+
+y_ = tf.sigmoid(tf.add(tf.matmul(x, weights), bias))
+
+loss = tf.reduce_mean(tf.square(y - y_))
+
+optimizer = tf.train.GradientDescentOptimizer(0.7)
+train = optimizer.minimize(loss)
+
+init = tf.initialize_all_variables()
+
+sess = tf.Session()
+sess.run(init)
+
+for _ in range(10000):
+    print sess.run(loss, feed_dict={x: X_train, y: y_train})
+    sess.run(train, feed_dict={x: X_train, y: y_train})
+    # print sess.run(weights, feed_dict={x: X_train, y: y_train}), sess.run(bias, feed_dict={x: X_train, y: y_train})
+
+print 1 - sum(abs(y_test - sess.run(y_, feed_dict={x: X_test})))/X_test.shape[0]
