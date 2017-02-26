@@ -48,7 +48,9 @@ for i in range(X_raw.shape[0]):
     print ''
 
 '''
-X_raw = scale(X_raw)
+
+# 标准化X_raw
+# X_raw = scale(X_raw)
 
 X_train, X_test, y_train, y_test = train_test_split(X_raw, Y_raw, test_size=0.3, random_state=0)
 
@@ -56,8 +58,6 @@ X_train = np.array(X_train)
 X_test = np.array(X_test)
 y_train = np.array(y_train)
 y_test = np.array(y_test)
-
-X_train = scale(X_train)
 
 '''
 for i in range(100):
@@ -79,7 +79,7 @@ y_ = tf.sigmoid(tf.add(tf.matmul(x, weights), bias))
 
 loss = tf.reduce_mean(tf.square(y - y_))
 
-optimizer = tf.train.GradientDescentOptimizer(0.7)
+optimizer = tf.train.GradientDescentOptimizer(0.1)
 train = optimizer.minimize(loss)
 
 init = tf.initialize_all_variables()
@@ -87,8 +87,8 @@ init = tf.initialize_all_variables()
 sess = tf.Session()
 sess.run(init)
 
-for _ in range(10000):
-    print sess.run(loss, feed_dict={x: X_train, y: y_train})
+for i in range(10000):
+    print i, sess.run(loss, feed_dict={x: X_train, y: y_train})
     sess.run(train, feed_dict={x: X_train, y: y_train})
     # print sess.run(weights, feed_dict={x: X_train, y: y_train}), sess.run(bias, feed_dict={x: X_train, y: y_train})
 
