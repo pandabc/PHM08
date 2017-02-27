@@ -13,7 +13,7 @@ class PHM08(object):
                         [], [], [], [], [], [], [],
                         [], [], [], [], [], [], []]
 
-    def generate_data(self):
+    def generate_data_for_classification(self):
         n_cycles = len(self.time)
         settings = np.array(self.settings)
         sensors = np.array(self.sensors)
@@ -31,4 +31,16 @@ class PHM08(object):
 
         return x_train, y_train
 
+    def generate_data_for_regression(self):
+        n_cycles = len(self.time)
+        settings = np.array(self.settings)
+        sensors = np.array(self.sensors)
+        X_train = np.row_stack((settings, sensors))
 
+        y_train = np.arange(n_cycles)
+        y_train = y_train[::-1]
+
+        X_train = np.array(X_train).transpose()
+        y_train = np.array(y_train).reshape((n_cycles, 1))
+
+        return X_train, y_train, n_cycles

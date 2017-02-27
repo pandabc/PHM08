@@ -38,7 +38,7 @@ Y_raw = np.empty((n_samples, 1))
 
 for i in range(n_units):
     phm = PHMs[i]
-    x, y = phm.generate_data()
+    x, y = phm.generate_data_for_classification()
     left = i*60
     right = i*60 + 60
     X_raw[left:right, :] = x
@@ -82,8 +82,8 @@ b_1 = tf.Variable(tf.random_normal([n_hidden]))
 w_2 = tf.Variable(tf.random_normal([n_hidden, 1]))
 b_2 = tf.Variable(tf.random_normal([1]))
 
-h = tf.add(tf.matmul(x, w_1), b_1)
-y_ = tf.sigmoid(tf.add(tf.matmul(h, w_2), b_2))
+h = tf.nn.sigmoid(tf.add(tf.matmul(x, w_1), b_1))
+y_ = tf.nn.sigmoid(tf.add(tf.matmul(h, w_2), b_2))
 
 loss = tf.reduce_mean(tf.square(y - y_))
 
