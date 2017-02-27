@@ -1,8 +1,11 @@
+# encoding: utf-8
 import numpy as np
 import PHM08
 from sklearn.cross_validation import train_test_split
 import tensorflow as tf
 from sklearn.preprocessing import scale
+import time
+
 
 filename = './data/train.txt'
 
@@ -50,7 +53,7 @@ for i in range(X_raw.shape[0]):
 '''
 
 # 标准化X_raw
-# X_raw = scale(X_raw)
+X_raw = scale(X_raw)
 
 X_train, X_test, y_train, y_test = train_test_split(X_raw, Y_raw, test_size=0.3, random_state=0)
 
@@ -68,18 +71,23 @@ for i in range(100):
 '''
 n_samples = X_train.shape[0]
 n_input = 24
+n_hidden = 3
 
 x = tf.placeholder('float', [None, n_input])
 y = tf.placeholder('float', [None, 1])
 
-weights = tf.Variable(tf.random_normal([n_input, 1]))
-bias = tf.Variable(tf.random_normal([1]))
+w_1 = tf.Variable(tf.random_normal([n_input, n_hidden]))
+b_1 = tf.Variable(tf.random_normal([n_hidden]))
 
-y_ = tf.sigmoid(tf.add(tf.matmul(x, weights), bias))
+w_2 = tf.Variable(tf.random_normal([n_hidden, 1]))
+b_2 = tf.Variable(tf.random_normal([1]))
+
+h = tf.sigmoid(tf.add(tf.matmul(x, w_1), b_1))
+y_ = tf.sigmoid(tf.add(tf.matmul(h, w_2), b_2))
 
 loss = tf.reduce_mean(tf.square(y - y_))
 
-optimizer = tf.train.GradientDescentOptimizer(0.1)
+optimizer = tf.train.GradientDescentOptimizer(1.0)
 train = optimizer.minimize(loss)
 
 init = tf.initialize_all_variables()
@@ -87,9 +95,15 @@ init = tf.initialize_all_variables()
 sess = tf.Session()
 sess.run(init)
 
+start = time.time()
+
 for i in range(10000):
     print i, sess.run(loss, feed_dict={x: X_train, y: y_train})
     sess.run(train, feed_dict={x: X_train, y: y_train})
     # print sess.run(weights, feed_dict={x: X_train, y: y_train}), sess.run(bias, feed_dict={x: X_train, y: y_train})
 
 print 1 - sum(abs(y_test - sess.run(y_, feed_dict={x: X_test})))/X_test.shape[0]
+
+end = time.time()
+
+print end - start
