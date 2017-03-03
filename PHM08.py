@@ -43,4 +43,6 @@ class PHM08(object):
         X_train = np.array(X_train).transpose()
         y_train = np.array(y_train).reshape((n_cycles, 1))
 
+        y_train[np.where(y_train > 125)] = 125
+
         return X_train, y_train, n_cycles

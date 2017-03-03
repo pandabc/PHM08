@@ -5,6 +5,8 @@ from sklearn.cross_validation import train_test_split
 import tensorflow as tf
 from sklearn.preprocessing import scale
 import os
+import matplotlib.pyplot as plt
+import sys
 
 
 filename = './data/train.txt'
@@ -80,18 +82,25 @@ else:
     sess.run(init)
 
 '''
-y_loss = sess.run(y_, feed_dict={x: X_raw, y: y_raw})
-sq = sess.run(tf.square(y - y_), feed_dict={x: X_raw, y: y_raw})
-
-for i in range(450):
-    print y_raw[i], y_loss[i], sq[i]
-
-print sess.run(loss, feed_dict={x: X_raw, y: y_raw})
-
-'''
+# train model
 for i in range(10000):
     _, loss_value = sess.run([train, loss], feed_dict={x: X_raw, y: y_raw})
     # print sess.run(y_, feed_dict={x: X_raw, y: y_raw})
     if i % 100 == 0:
         save_path = saver.save(sess, 'tmp/model.ckpt')
         print "模型保存:%s 当前训练损失:%s" % (save_path, np.sqrt(loss_value))
+'''
+
+i = int(sys.argv[1])
+
+# predict
+phm = PHMs[i]
+X_test, y_test, n_cycles = phm.generate_data_for_regression()
+X_test = scale(X_test)
+y_pred = sess.run(y_, feed_dict={x: X_test})
+
+x = np.arange(y_test.shape[0])
+
+plt.plot(x, y_test)
+plt.plot(x, y_pred)
+plt.show()
